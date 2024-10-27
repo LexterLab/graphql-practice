@@ -1,5 +1,7 @@
 package com.test.graphql.error;
 
+import com.test.graphql.exception.GeneralException;
+import com.test.graphql.exception.InputValidationException;
 import com.test.graphql.operation.base.OperationInput;
 import io.vavr.API;
 import jakarta.validation.ConstraintViolation;
@@ -24,16 +26,24 @@ public class ErrorHandler {
     protected final ConversionService conversionService;
     protected final Validator validator;
 
-    protected API.Match.Case<Exception, ErrorWrapper> customCase(Throwable throwable, HttpStatus status,
-                                                                 Class<? extends Exception> e) {
-        return Case($(instanceOf(e)), () -> ErrorWrapper.builder()
-                .errors(List.of(Error.builder()
-                        .message(throwable.getMessage())
-                        .build()))
-                .status(status).build());
+
+    public ErrorWrapper handle(Throwable throwable) {
+        return API.Match(throwable).of(
+                validatorCase(throwable),
+
+                Case($(instanceOf(GeneralException.class)), () -> ErrorWrapper.builder()
+                        .errors(List.of(Error.builder()
+                                .message(throwable.getMessage())
+                                .build()))
+                        .status(((GeneralException) throwable).getStatus())
+                        .build()),
+
+                defaultCase(throwable)
+        );
     }
 
-    protected API.Match.Case<Exception, ErrorWrapper> defaultCase(Throwable throwable) {
+
+    private API.Match.Case<Exception, ErrorWrapper> defaultCase(Throwable throwable) {
         return Case($(),() -> ErrorWrapper.builder()
                 .errors(List.of(Error.builder()
                         .message(throwable.getMessage())
@@ -42,7 +52,7 @@ public class ErrorHandler {
                 .build());
     }
 
-    protected API.Match.Case<Exception, ErrorWrapper> validatorCase(Throwable throwable) {
+    private API.Match.Case<Exception, ErrorWrapper> validatorCase(Throwable throwable) {
         List<Error> errors = mapExceptionToErrors(throwable);
         return Case($(instanceOf(InputValidationException.class)), () -> ErrorWrapper.builder()
                 .errors(errors)
@@ -50,7 +60,7 @@ public class ErrorHandler {
                 .build());
     }
 
-    protected void validateInput(OperationInput input) {
+    public void validateInput(OperationInput input) {
         Set<ConstraintViolation<OperationInput>> violations = validator.validate(input);
         if (!violations.isEmpty()) {
             throw new InputValidationException(mapConstraintViolations(violations));
@@ -68,8 +78,8 @@ public class ErrorHandler {
 
     private List<Error> mapExceptionToErrors(Throwable throwable) {
         List<Error> errors = new ArrayList<>();
-        if (throwable instanceof InputValidationException) {
-            ((InputValidationException) throwable).getErrors()
+        if (throwable instanceof InputValidationException ex) {
+                ex.getErrors()
                     .forEach(error -> errors.add(Error.builder()
                             .message(error.message())
                             .field(error.field()).build()));

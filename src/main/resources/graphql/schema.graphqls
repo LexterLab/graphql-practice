@@ -1,11 +1,16 @@
 type Query {
-    createBook(input: AddCartoonInput): AddCartoonOutput
+    _dummy: String
+}
+
+
+type Mutation {
+    createBook(input: AddCartoonInput!): AddCartoonOutput
 }
 
 union CreateBookResult = AddCartoonOutput | ErrorWrapper
 
 input AddCartoonInput {
-    name: String
+    name: String!
 }
 
 type AddCartoonOutput {
