@@ -1,0 +1,28 @@
+type Query {
+    createBook(input: AddCartoonInput): AddCartoonOutput
+}
+
+union CreateBookResult = AddCartoonOutput | ErrorWrapper
+
+input AddCartoonInput {
+    name: String
+}
+
+type AddCartoonOutput {
+    name: String
+}
+
+type ErrorWrapper {
+    errors: [Error]
+    status: HttpStatus
+}
+
+type Error {
+    message: String
+}
+
+enum HttpStatus {
+    OK
+    BAD_REQUEST
+    CREATED
+}
