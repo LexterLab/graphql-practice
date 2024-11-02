@@ -30,7 +30,7 @@ public class AddCartoonProcessor implements AddCartoon {
     private Try<AddCartoonOutput> cartoonOutput(AddCartoonInput input) {
         log.info("input {}", input);
         return Try.of(() -> AddCartoonOutput.builder()
-                .name("name")
+                .name(input.name())
                 .build());
     }
 }

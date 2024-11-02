@@ -14,15 +14,15 @@ import org.springframework.stereotype.Controller;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-public class CartoonController {
+public class CartoonController extends BaseController {
     private final AddCartoon addCartoon;
 
 
     @MutationMapping
-    public Either<ErrorWrapper, AddCartoonOutput> createBook(@Argument AddCartoonInput input) {
+    public Object createBook(@Argument AddCartoonInput input) {
         Either<ErrorWrapper, AddCartoonOutput> output = addCartoon.process(input);
         log.info("output: {}", output);
-        return addCartoon.process(input);
+        return handleOutput(output);
     }
 
 }
