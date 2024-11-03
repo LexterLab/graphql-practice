@@ -7,6 +7,7 @@ import io.vavr.API;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -22,21 +23,22 @@ import static io.vavr.Predicates.instanceOf;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ErrorHandler {
     protected final ConversionService conversionService;
     protected final Validator validator;
 
 
     public ErrorWrapper handle(Throwable throwable) {
+        System.out.println("Error: " + throwable.getMessage());
         return API.Match(throwable).of(
-                validatorCase(throwable),
-
                 Case($(instanceOf(GeneralException.class)), () -> ErrorWrapper.builder()
                         .errors(List.of(Error.builder()
                                 .message(throwable.getMessage())
                                 .build()))
                         .status(((GeneralException) throwable).getStatus())
                         .build()),
+                validatorCase(throwable),
 
                 defaultCase(throwable)
         );
@@ -44,6 +46,7 @@ public class ErrorHandler {
 
 
     private API.Match.Case<Exception, ErrorWrapper> defaultCase(Throwable throwable) {
+        log.info("Error def: {}", throwable.getMessage());
         return Case($(),() -> ErrorWrapper.builder()
                 .errors(List.of(Error.builder()
                         .message(throwable.getMessage())
@@ -54,6 +57,7 @@ public class ErrorHandler {
 
     private API.Match.Case<Exception, ErrorWrapper> validatorCase(Throwable throwable) {
         List<Error> errors = mapExceptionToErrors(throwable);
+        log.info("Errors: {}", errors);
         return Case($(instanceOf(InputValidationException.class)), () -> ErrorWrapper.builder()
                 .errors(errors)
                 .status(HttpStatus.BAD_REQUEST)

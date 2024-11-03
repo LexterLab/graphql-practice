@@ -1,8 +1,11 @@
 package com.test.graphql.aspect.inputvalidation;
 
 import com.test.graphql.error.Error;
+import com.test.graphql.error.ErrorHandler;
+import com.test.graphql.error.ErrorWrapper;
 import com.test.graphql.exception.InputValidationException;
 import com.test.graphql.operation.base.OperationInput;
+import io.vavr.control.Either;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ValidationAspect {
     private final Validator validator;
+    private final ErrorHandler errorHandler; // Inject ErrorHandler
 
     @Around("@annotation(com.test.graphql.validator.input.ValidateInput)")
     public Object validateInput(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -31,18 +35,21 @@ public class ValidationAspect {
             Set<ConstraintViolation<OperationInput>> violations = validator.validate(input);
             if (!violations.isEmpty()) {
                 List<Error> errors = mapConstraintViolations(violations);
-                throw new InputValidationException(errors);
+                InputValidationException validationException = new InputValidationException(errors);
+
+                ErrorWrapper errorWrapper = errorHandler.handle(validationException);
+
+                return Either.left(errorWrapper);
             }
         }
-
 
         return joinPoint.proceed();
     }
 
-    private List<Error> mapConstraintViolations(Set<ConstraintViolation<OperationInput>> violations) {
+    private List<com.test.graphql.error.Error> mapConstraintViolations(Set<ConstraintViolation<OperationInput>> violations) {
         log.info("violations {}", violations);
         return violations.stream()
-                .map(violation -> Error.builder()
+                .map(violation -> com.test.graphql.error.Error.builder()
                         .message(violation.getMessage())
                         .field(violation.getPropertyPath().toString())
                         .build())
