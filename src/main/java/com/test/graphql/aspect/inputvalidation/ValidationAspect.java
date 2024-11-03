@@ -39,7 +39,7 @@ public class ValidationAspect {
 
                 ErrorWrapper errorWrapper = errorHandler.handle(validationException);
 
-                return Either.left(errorWrapper);
+                 return Either.left(errorWrapper);
             }
         }
 

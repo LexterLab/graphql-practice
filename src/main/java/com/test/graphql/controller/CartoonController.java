@@ -22,7 +22,10 @@ public class CartoonController extends BaseController {
     public Object createBook(@Argument AddCartoonInput input) {
         Either<ErrorWrapper, AddCartoonOutput> output = addCartoon.process(input);
         log.info("output: {}", output);
-        return handleOutput(output);
+        var handled = handleOutput(output);
+        log.info("handled: {}", handled);
+        return handled;
     }
+
 
 }

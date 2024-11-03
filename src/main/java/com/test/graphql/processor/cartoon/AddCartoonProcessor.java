@@ -29,6 +29,7 @@ public class AddCartoonProcessor implements AddCartoon {
 
     private Try<AddCartoonOutput> cartoonOutput(AddCartoonInput input) {
         log.info("input {}", input);
+        errorHandler.validateInput(input);
         return Try.of(() -> AddCartoonOutput.builder()
                 .name(input.name())
                 .build());
