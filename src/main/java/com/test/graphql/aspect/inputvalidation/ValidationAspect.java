@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ValidationAspect {
     private final Validator validator;
-    private final ErrorHandler errorHandler; // Inject ErrorHandler
+    private final ErrorHandler errorHandler;
 
     @Around("@annotation(com.test.graphql.validator.input.ValidateInput)")
     public Object validateInput(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -46,7 +46,7 @@ public class ValidationAspect {
         return joinPoint.proceed();
     }
 
-    private List<com.test.graphql.error.Error> mapConstraintViolations(Set<ConstraintViolation<OperationInput>> violations) {
+    private List<Error> mapConstraintViolations(Set<ConstraintViolation<OperationInput>> violations) {
         log.info("violations {}", violations);
         return violations.stream()
                 .map(violation -> com.test.graphql.error.Error.builder()
