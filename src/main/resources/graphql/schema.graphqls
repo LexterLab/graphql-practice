@@ -4,10 +4,13 @@ type Query {
 
 
 type Mutation {
-    createBook(input: AddCartoonInput!): CreateBookResult
+    createCartoon(input: AddCartoonInput!): CreateBookResult
+    updateCartoon(input: UpdateCartoonInput!): UpdateCartoonResult
 }
 
+
 union CreateBookResult = AddCartoonOutput | ErrorWrapper
+union UpdateCartoonResult = UpdateCartoonOutput | ErrorWrapper
 
 input AddCartoonInput {
     name: String!
@@ -17,6 +20,16 @@ type AddCartoonOutput {
     name: String
 }
 
+
+input UpdateCartoonInput {
+    name: String!
+}
+
+type UpdateCartoonOutput {
+    _placeholder: String
+}
+
+
 type ErrorWrapper {
     errors: [Error!]!
     status: HttpStatus!
@@ -24,6 +37,7 @@ type ErrorWrapper {
 
 type Error {
     message: String!
+    field: String
 }
 
 enum HttpStatus {
