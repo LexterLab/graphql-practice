@@ -1,5 +1,5 @@
 type Query {
-    _dummy: String
+    getCartoon(cartoonId: String): GetCartoonResult
 }
 
 
@@ -11,9 +11,14 @@ type Mutation {
 
 union CreateBookResult = AddCartoonOutput | ErrorWrapper
 union UpdateCartoonResult = UpdateCartoonOutput | ErrorWrapper
+union GetCartoonResult = GetCartoonOutput | ErrorWrapper
 
 input AddCartoonInput {
     name: String!
+}
+
+type GetCartoonOutput {
+    name: String
 }
 
 type AddCartoonOutput {
