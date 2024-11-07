@@ -31,7 +31,7 @@ input UpdateCartoonInput {
 }
 
 type UpdateCartoonOutput {
-    _placeholder: String
+   name: String
 }
 
 
